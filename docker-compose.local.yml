@@ -1,0 +1,38 @@
+services:
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TIMEZONE:-Etc/UTC}
+      - AUTO_UPDATE=false
+    volumes:
+      - ${JACKETT_CONFIG_FOLDER:-./config}:/config
+      - ${JACKETT_BLACKHOLE_FOLDER:-./downloads}:/downloads
+    ports:
+      - ${JACKETT_PORT:-9117}:9117
+    restart: unless-stopped
+    networks:
+      local:
+        ipv4_address: 172.${SUBNET_NUMBER:-20}.0.2
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr
+    container_name: flaresolverr
+    environment:
+      - LOG_LEVEL=info
+      - TZ=${TIMEZONE:-Etc/UTC}
+    ports:
+      - ${FLARESOLVERR_PORT:-8191}:8191
+    restart: unless-stopped
+    networks:
+      local:
+        ipv4_address: 172.${SUBNET_NUMBER:-20}.0.3
+
+networks:
+  local:
+    name: jackett-local-network
+    ipam:
+      config:
+        - subnet: 172.${SUBNET_NUMBER:-20}.0.0/16
